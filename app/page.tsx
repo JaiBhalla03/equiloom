@@ -7,19 +7,27 @@ import { Label } from "@/components/ui/label"
 import { Moon, Sun } from 'lucide-react'
 import { Loader2 } from 'lucide-react' // Using Loader2 as the loading spinner
 
+// Define form data types
+interface FormData {
+  open: string
+  low: string
+  high: string
+  close: string
+}
+
 export default function Home() {
   const [showForm, setShowForm] = useState(false)
   const [predictionType, setPredictionType] = useState('open')
   const [darkMode, setDarkMode] = useState(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     open: '',
     low: '',
     high: '',
     close: '',
   })
-  const [prediction, setPrediction] = useState(null)
+  const [prediction, setPrediction] = useState<string | null>(null)
   const [loading, setLoading] = useState(false) // Loading state
-  const lastPredictionRef = useRef({})
+  const lastPredictionRef = useRef<{ [key: string]: string }>({})
 
   useEffect(() => {
     if (darkMode) {
@@ -29,7 +37,8 @@ export default function Home() {
     }
   }, [darkMode])
 
-  const handleInputChange = (e) => {
+  // Typing the event parameter as React.ChangeEvent<HTMLInputElement>
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData((prevData) => ({
       ...prevData,
@@ -38,16 +47,16 @@ export default function Home() {
     setPrediction(null) // Clear the prediction when inputs change
   }
 
-  const generateRandomPrediction = (value, ensureCondition) => {
-    let predictionValue
+  const generateRandomPrediction = (value: number, ensureCondition: (value: string) => boolean) => {
+    let predictionValue: string
     do {
       const variation = (Math.random() * 0.1 - 0.05) * value // ±5% random variation
-      predictionValue = (parseFloat(value) + variation).toFixed(2)
+      predictionValue = (parseFloat(value.toString()) + variation).toFixed(2)
     } while (!ensureCondition(predictionValue))
     return predictionValue
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     setLoading(true) // Start loading
@@ -220,18 +229,25 @@ export default function Home() {
 
                       <Button
                           type="submit"
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+                          className="w-full py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+                          disabled={loading}
                       >
                         {loading ? (
-                            <Loader2 className="h-6 w-6 animate-spin" />
+                            <Loader2 className="animate-spin h-5 w-5" />
                         ) : (
-                            'Predict'
+                            'Get Prediction'
                         )}
                       </Button>
                     </form>
-                    {prediction && <p className="mt-4 text-center text-xl">{prediction}</p>}
                   </CardContent>
                 </Card>
+            )}
+
+            {/* Display Prediction */}
+            {prediction && (
+                <div className="text-center">
+                  <h3 className="text-2xl font-semibold">{prediction}</h3>
+                </div>
             )}
           </main>
         </div>
